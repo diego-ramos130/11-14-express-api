@@ -40,3 +40,4 @@ Configure the root of your repository with the following files and directories. 
 * Design, implement, and test a PUT server endpoint.
 * use the `http-errors` module to create new errors and associate them with a proper status code
 * create an `error-middleware` module to handle errors and *use* it in your server file
+* use the `CORS` middleware to allow 3rd party requests to your API
