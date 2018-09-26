@@ -2,11 +2,10 @@
 ===
 
 ## Submission Instructions
-* Continue working from your lab 11 code
+* Continue working from your lab 12 code
 * Work in a different branch on your fork
 * Create a PR to your master from your working branch.
 * Ensure that your repository/branch is connected to travis-ci.com
-* Heroku and Travis should pick you up and deploy
 * Submit on canvas:
   * a question and observation
   * how long you spent
