@@ -82,4 +82,31 @@ describe('/api/games', () => {
         expect(response.status).toEqual(400);
       });
   });
+  test('should give 200 if you modify a file that does exist', () => {
+    let storageID;
+    return superagent.post(API_URL)
+      .set('Content-Type', 'application/json')
+      .send({
+        game: 'Path of Exile',
+        type: 'Action Role Playing Game',
+      })
+      .then((response) => {
+        expect(response.status).toEqual(200);
+        expect(response.body.game).toEqual('Path of Exile');
+        expect(response.body.type).toEqual('Action Role Playing Game');
+        expect(response.body.timestamp).toBeTruthy();
+        expect(response.body.id).toBeTruthy();
+        storageID = response.body.id;
+        return superagent.put(`${API_URL}/${storageID}`)
+          .set('Content-Type', 'application/json')
+          .send({
+            type: 'Diablo Clone',
+          });
+      })
+      .then((response) => {
+        expect(response.status).toEqual(200);
+        expect(response.body.game).toEqual('Path of Exile');
+        expect(response.body.type).toEqual('Diablo Clone');
+      });
+  });
 });

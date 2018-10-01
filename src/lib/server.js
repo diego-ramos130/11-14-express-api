@@ -1,13 +1,15 @@
 'use strict';
 
 const express = require('express');
+const cors = require('cors');
 const logger = require('./logger');
 const loggerMiddleware = require('./logger-middleware');
 const errorMiddleware = require('./error-middleware');
-
 const gameRoutes = require('../routes/game-router');
 
 const app = express();
+
+app.use(cors());
 
 app.use(loggerMiddleware);
 

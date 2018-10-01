@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const HttpError = require('http-errors');
 
-
 const Game = require('../model/game');
 const logger = require('../lib/logger');
 
