@@ -10,64 +10,47 @@ const logger = require('../lib/logger');
 const jsonParser = bodyParser.json();
 const router = module.exports = new express.Router();
 
-const storageById = [];
-const storageByHash = {};
-
 router.post('/api/games', jsonParser, (request, response, next) => {
-  if (!request.body) {
-    return next(new HttpError(400, 'body is required'));
-  }
-  if (!request.body.game) {
-    return next(new HttpError(400, 'game name is required'));
-  }
-  if (!request.body.type) {
-    return next(new HttpError(400, 'game type is required'));
-  }
-  const game = new Game(request.body.game, request.body.type);
-  storageById.push(game.id);
-  storageByHash[game.id] = game;
-
-  logger.log(logger.INFO, 'successful, sending a 200 and returning json object of what user made');
-  logger.log(logger.INFO, storageById);
-  logger.log(logger.INFO, storageByHash);
-  return response.json(game);
+  return new Game(request.body).save()
+    .then((savedGame) => {
+      logger.log(logger.INFO, 'responding with a 200 status code & json data');
+      return response.json(savedGame);
+    })
+    .catch(next);
 });
 
 router.get('/api/games/:id', jsonParser, (request, response, next) => {
-  logger.log(logger.INFO, `trying to get a game by the id of ${request.params.id}`);
-  if (storageByHash[request.params.id]) {
-    logger.log(logger.INFO, 'successful, responding with a 200 status code and json data');
-    return response.json(storageByHash[request.params.id]);
-  }
-  return next(new HttpError(404, 'The note was not found'));
-});
-router.get('/api/games/', jsonParser, (request, response, next) => {
-  return next(new HttpError(400, 'provide an id'));
+  return Game.findById(request.params.id)
+    .then((game) => {
+      if (game) {
+        logger.log(logger.INFO, 'responding with 200 status code and JSON return data.');
+        return response.json(game);
+      }
+      logger.log(logger.INFO, '404 response, game not found.');
+      return next(new HttpError(404, 'game not found'));
+    })
+    .catch(next);
 });
 
 router.delete('/api/games/:id', jsonParser, (request, response, next) => {
-  logger.log(logger.INFO, `trying to delete a game by the id of ${request.params.id}`);
-  if (storageByHash[request.params.id]) {
-    logger.log(logger.INFO, 'element found');
-    const idx = storageById.indexOf(request.params.id);
-    storageById.splice(idx, 1);
-    delete storageByHash[request.params.id];
-    return response.sendStatus(204);
-  }
-  return next(new HttpError(404, 'the game wasn\'t found'));
+  return Game.findByIdAndRemove(request.params.id)
+    .then(() => {
+      logger.log(logger.INFO, `successfully deleted game by id of ${request.params.id}`);
+      return response.sendStatus(200);
+    })
+    .catch(next);
 });
 
 router.put('/api/games/:id', jsonParser, (request, response, next) => {
   logger.log(logger.INFO, `trying to update a game by the id of ${request.params.id}`);
-  if (storageByHash[request.params.id]) {
-    logger.log(logger.INFO, 'element to be updated found');
-    if (request.body.game) {
-      storageByHash[request.params.id].game = request.body.game;
-    }
-    if (request.body.type) {
-      storageByHash[request.params.id].type = request.body.type;
-    }
-    return response.json(storageByHash[request.params.id]);
-  }
-  return next(new HttpError(404, 'could not find element!'));
+  return Game.findByIdAndUpdate(request.params.id, request.body, { new: true })
+    .then((newGame) => {
+      if (newGame) {
+        logger.log(logger.INFO, 'responding with 200 status code and JSON return data');
+        return response.json(newGame);
+      }
+      logger.log(logger.INFO, '404 response, game not found.');
+      return next(new HttpError(404, 'game not found'));
+    })
+    .catch(next);
 });

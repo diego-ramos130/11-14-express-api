@@ -1,14 +1,22 @@
 'use strict';
 
-const uuid = require('uuid/v1');
+const mongoose = require('mongoose');
 
-class Game {
-  constructor(game, type) {
-    this.game = game;
-    this.type = type;
-    this.id = uuid();
-    this.timestamp = new Date();
-  }
-}
 
-module.exports = Game; 
+const gameSchema = mongoose.Schema({
+  timestamp: {
+    type: Date,
+    default: () => new Date(),
+  },
+  game: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  type: {
+    type: String,
+    required: true,
+  },
+});
+
+module.exports = mongoose.model('game', gameSchema);

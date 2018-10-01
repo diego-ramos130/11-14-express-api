@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "eslint . && jest --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "dbOn": "mkdir -p ./db && mongod --dbpath ./db",
+    "dbOff": "killall mongod"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +30,8 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "http-errors": "^1.7.1",
+    "mongodb": "^2.2.36",
+    "mongoose": "^5.3.0",
     "uuid": "^3.3.2",
     "winston": "^3.1.0"
   }

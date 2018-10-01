@@ -1,7 +1,9 @@
 'use strict';
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const logger = require('./logger');
 const loggerMiddleware = require('./logger-middleware');
 const errorMiddleware = require('./error-middleware');
@@ -26,13 +28,19 @@ const server = module.exports = {};
 let internalServer = null;
 
 server.start = () => {
-  internalServer = app.listen(process.env.PORT, () => {
-    logger.log(logger.INFO, `server is listening on port ${process.env.PORT}`);
-  });
+  return mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+      internalServer = app.listen(process.env.PORT, () => {
+        logger.log(logger.INFO, `server is listening on port ${process.env.PORT}`);
+      });
+    });
 };
 
 server.end = () => {
-  internalServer.close(() => {
-    logger.log(logger.INFO, 'the server is off!');
-  });
+  return mongoose.disconnect()
+    .then(() => {
+      internalServer.close(() => {
+        logger.log(logger.INFO, 'the server is off!');
+      });
+    });
 };

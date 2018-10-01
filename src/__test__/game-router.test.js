@@ -5,12 +5,14 @@ process.env.PORT = 3000;
 const faker = require('faker');
 const superagent = require('superagent');
 const server = require('../lib/server');
+const gameMock = require('./lib/mockGame');
 
 const API_URL = `http://localhost:${process.env.PORT}/api/games`;
 
 describe('/api/games', () => {
   beforeAll(server.start);
   afterAll(server.end);
+  beforeEach(gameMock.pCleanGameMocks);
 
   test('should break to 404 in case of $insert_url_that_doesn\'t_exist', () => {
     return superagent.get(`http://localhost:${process.env.PORT}/aaaaaaahhhhhhhhh`)
@@ -20,16 +22,17 @@ describe('/api/games', () => {
       });
   });
   test('should give a 200 on a post + json data', () => {
+    const originalRequest = {
+      game: faker.lorem.words(1),
+      type: faker.lorem.words(3),
+    };
     return superagent.post(API_URL)
       .set('Content-Type', 'application/json')
-      .send({
-        game: 'Path of Exile',
-        type: 'Action Role Playing Game',
-      })
+      .send(originalRequest)
       .then((response) => {
         expect(response.status).toEqual(200);
-        expect(response.body.game).toEqual('Path of Exile');
-        expect(response.body.type).toEqual('Action Role Playing Game');
+        expect(response.body.game).toEqual(originalRequest.game);
+        expect(response.body.type).toEqual(originalRequest.type);
         expect(response.body.timestamp).toBeTruthy();
         expect(response.body.id).toBeTruthy();
       });
