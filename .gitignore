@@ -5,6 +5,7 @@
 ### Linux ###
 *~
 
+
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
 
@@ -63,6 +64,8 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
+
+db
 
 # nyc test coverage
 .nyc_output

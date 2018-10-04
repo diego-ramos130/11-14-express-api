@@ -1,7 +1,6 @@
 'use strict';
 
-process.env.PORT = 3000;
-
+require('dotenv').config();
 const faker = require('faker');
 const superagent = require('superagent');
 const server = require('../lib/server');
@@ -34,7 +33,6 @@ describe('/api/games', () => {
         expect(response.body.game).toEqual(originalRequest.game);
         expect(response.body.type).toEqual(originalRequest.type);
         expect(response.body.timestamp).toBeTruthy();
-        expect(response.body.id).toBeTruthy();
       });
   });
   test('should give a 404 on a get that don\'t exist', () => {
@@ -46,34 +44,26 @@ describe('/api/games', () => {
   });
   test('should give a 400 on passing a get with nothing in the object', () => {
     return superagent.get(`${API_URL}/`)
-      .set('Content-Type', 'application/json')
-      .send({
-        game: 'crontent',
-      })
       .then(Promise.reject)
       .catch((response) => {
         expect(response.status).toEqual(400);
       });
   });
   test('should give 200 if you actually request something with a correct id', () => {
-    const originalRequest = {
-      game: faker.lorem.words(2),
-      type: faker.lorem.words(4),
-    };
-    return superagent.post(API_URL)
-      .set('Content-Type', 'application/json')
-      .send(originalRequest)
-      .then((postResponse) => {
-        originalRequest.id = postResponse.body.id;
-        return superagent.get(`${API_URL}/${postResponse.body.id}`);
+    return gameMock.pCreateGameMock()
+      .then((getTarget) => {
+        return superagent.get(`${API_URL}/${getTarget.id}`)
+          .then((getResponse) => {
+            expect(getResponse.body._id).toEqual(getTarget.id);
+            expect(getResponse.body.game).toEqual(getTarget.game);
+            expect(getResponse.body.type).toEqual(getTarget.type);
+          });
       })
-      .then((getResponse) => {
-        expect(getResponse.status).toEqual(200);
-        expect(getResponse.body.timestamp).toBeTruthy();
-        expect(getResponse.body.id).toEqual(originalRequest.id);
-        expect(getResponse.body.game).toEqual(originalRequest.game);
+      .catch((error) => {
+        throw error;
       });
   });
+
   test('should give 400 if you post without a required field', () => {
     return superagent.post(API_URL)
       .set('Content-Type', 'application/json')
@@ -86,30 +76,32 @@ describe('/api/games', () => {
       });
   });
   test('should give 200 if you modify a file that does exist', () => {
-    let storageID;
-    return superagent.post(API_URL)
-      .set('Content-Type', 'application/json')
-      .send({
-        game: 'Path of Exile',
-        type: 'Action Role Playing Game',
-      })
-      .then((response) => {
-        expect(response.status).toEqual(200);
-        expect(response.body.game).toEqual('Path of Exile');
-        expect(response.body.type).toEqual('Action Role Playing Game');
-        expect(response.body.timestamp).toBeTruthy();
-        expect(response.body.id).toBeTruthy();
-        storageID = response.body.id;
-        return superagent.put(`${API_URL}/${storageID}`)
+    return gameMock.pCreateGameMock()
+      .then((putTarget) => {
+        return superagent.put(`${API_URL}/${putTarget.id}`)
           .set('Content-Type', 'application/json')
           .send({
+            game: 'Path of Exile',
             type: 'Diablo Clone',
+          })
+          .then((putResponse) => {
+            expect(putResponse.status).toEqual(200);
+            expect(putResponse.body._id).toEqual(putTarget.id);
+            expect(putResponse.body.game).toEqual('Path of Exile');
+            expect(putResponse.body.type).toEqual('Diablo Clone');
           });
-      })
-      .then((response) => {
-        expect(response.status).toEqual(200);
-        expect(response.body.game).toEqual('Path of Exile');
-        expect(response.body.type).toEqual('Diablo Clone');
       });
+  });
+  test('should give 200 if you delete a file correct', () => {
+    return gameMock.pCreateGameMock()
+      .then((deleteTarget) => {
+        return superagent.delete(`${API_URL}/${deleteTarget.id}`)
+          .then((deleteResponse) => {
+            expect(deleteResponse.status).toEqual(200);
+          });
+      });
+  });
+  test('should give 404 if you try to delete a file that doesn\'t exist', () => {
+    return
   });
 });
